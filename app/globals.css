@@ -68,7 +68,7 @@ a:focus-visible {
   border: 0;
   padding: 0;
   background: transparent;
-  transition: clip-path 820ms cubic-bezier(.16, 1, .3, 1);
+  transition: clip-path 3000ms cubic-bezier(.16, 1, .3, 1);
   will-change: clip-path;
 }
 
@@ -86,10 +86,10 @@ a:focus-visible {
   top: 0;
   bottom: 0;
   transition:
-    left 820ms cubic-bezier(.16, 1, .3, 1),
-    width 820ms cubic-bezier(.16, 1, .3, 1),
-    top 820ms cubic-bezier(.16, 1, .3, 1),
-    height 820ms cubic-bezier(.16, 1, .3, 1);
+    left 3000ms cubic-bezier(.16, 1, .3, 1),
+    width 3000ms cubic-bezier(.16, 1, .3, 1),
+    top 3000ms cubic-bezier(.16, 1, .3, 1),
+    height 3000ms cubic-bezier(.16, 1, .3, 1);
   will-change: left, width, top, height;
 }
 
@@ -111,7 +111,7 @@ a:focus-visible {
   background: rgb(255 255 255 / 0.45);
   box-shadow: 0 0 28px rgb(0 0 0 / 0.2);
   transform: translateX(-0.5px);
-  transition: left 820ms cubic-bezier(.16, 1, .3, 1);
+  transition: left 3000ms cubic-bezier(.16, 1, .3, 1);
   will-change: left;
 }
 
@@ -187,7 +187,7 @@ a:focus-visible {
 }
 
 .voting-stage.is-transitioning .split-divider {
-  animation: dividerTravelGlow 820ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: dividerTravelGlow 3000ms cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .option-press-flash {
@@ -296,7 +296,7 @@ a:focus-visible {
     width: auto;
     height: 1px;
     transform: translateY(-0.5px);
-    transition: top 820ms cubic-bezier(.16, 1, .3, 1);
+    transition: top 3000ms cubic-bezier(.16, 1, .3, 1);
     will-change: top;
   }
 }

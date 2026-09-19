@@ -19,7 +19,7 @@ type VoteResponse = {
 
 const MIN_VISIBLE_SHARE = 20;
 const MAX_VISIBLE_SHARE = 80;
-const SPLIT_ANIMATION_MS = 820;
+const SPLIT_ANIMATION_MS = 3000;
 
 export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
   const [choice, setChoice] = useState<Choice | null>(initialChoice);
