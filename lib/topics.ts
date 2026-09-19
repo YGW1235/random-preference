@@ -2,6 +2,11 @@ import { getSupabasePublic } from "@/lib/supabase/server";
 import { calculateResult } from "@/lib/result";
 import type { Choice, HistoryTopic, Topic, VoteResult } from "@/lib/types";
 
+type HistoryResultRow = Topic & {
+  votes_a: number | string | null;
+  votes_b: number | string | null;
+};
+
 export async function getActiveTopic(): Promise<Topic | null> {
   const supabase = getSupabasePublic();
   const { data, error } = await supabase.rpc("get_active_topic");
@@ -62,7 +67,7 @@ export async function getHistory(): Promise<HistoryTopic[]> {
   const { data, error } = await supabase.rpc("get_finished_topic_results");
   if (error) throw error;
 
-  return (data ?? []).map((row) => {
+  return (data ?? []).map((row: HistoryResultRow) => {
     const votesA = Number(row.votes_a ?? 0);
     const votesB = Number(row.votes_b ?? 0);
 
