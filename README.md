@@ -102,3 +102,7 @@ Check these once in production:
 ## Privacy
 
 The service uses only an essential anonymous browser cookie for one-vote-per-topic behavior and includes a minimal `/privacy` page. If analytics, advertising, fingerprinting, or country-level tracking is added later, revisit the privacy/cookie setup before shipping those features.
+
+## Vercel runtime region
+
+`vercel.json` pins Vercel Functions to `icn1` (Seoul) so the vote API runs near the Supabase project in Seoul.

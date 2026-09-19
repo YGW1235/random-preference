@@ -68,7 +68,7 @@ a:focus-visible {
   border: 0;
   padding: 0;
   background: transparent;
-  transition: clip-path 1150ms cubic-bezier(.16, 1, .3, 1);
+  transition: clip-path 820ms cubic-bezier(.16, 1, .3, 1);
   will-change: clip-path;
 }
 
@@ -86,10 +86,10 @@ a:focus-visible {
   top: 0;
   bottom: 0;
   transition:
-    left 1150ms cubic-bezier(.16, 1, .3, 1),
-    width 1150ms cubic-bezier(.16, 1, .3, 1),
-    top 1150ms cubic-bezier(.16, 1, .3, 1),
-    height 1150ms cubic-bezier(.16, 1, .3, 1);
+    left 820ms cubic-bezier(.16, 1, .3, 1),
+    width 820ms cubic-bezier(.16, 1, .3, 1),
+    top 820ms cubic-bezier(.16, 1, .3, 1),
+    height 820ms cubic-bezier(.16, 1, .3, 1);
   will-change: left, width, top, height;
 }
 
@@ -111,7 +111,7 @@ a:focus-visible {
   background: rgb(255 255 255 / 0.45);
   box-shadow: 0 0 28px rgb(0 0 0 / 0.2);
   transform: translateX(-0.5px);
-  transition: left 1150ms cubic-bezier(.16, 1, .3, 1);
+  transition: left 820ms cubic-bezier(.16, 1, .3, 1);
   will-change: left;
 }
 
@@ -174,8 +174,27 @@ a:focus-visible {
   animation: selectedSettle 900ms cubic-bezier(.22, 1, .36, 1) both;
 }
 
+.option-panel.is-pending .option-image {
+  animation: pendingPress 520ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.option-panel.is-pending .option-title {
+  animation: pendingTitle 420ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.option-panel.is-pending .option-overlay {
+  background: rgb(0 0 0 / 0.06);
+}
+
 .voting-stage.is-transitioning .split-divider {
-  animation: dividerTravelGlow 1150ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: dividerTravelGlow 820ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.option-press-flash {
+  background: white;
+  mix-blend-mode: soft-light;
+  animation: pressFlash 360ms ease-out both;
+  pointer-events: none;
 }
 
 .option-choice-flash {
@@ -186,7 +205,7 @@ a:focus-visible {
 }
 
 .result-reveal {
-  animation: resultReveal 620ms 280ms cubic-bezier(.22, 1, .36, 1) both;
+  animation: resultReveal 520ms 160ms cubic-bezier(.22, 1, .36, 1) both;
 }
 
 .vote-dot {
@@ -197,6 +216,24 @@ a:focus-visible {
   animation: votePulse 900ms ease-in-out infinite;
 }
 
+
+@keyframes pendingPress {
+  0% { transform: scale(1.055); filter: saturate(1.1) contrast(1.025); }
+  45% { transform: scale(1.025); filter: saturate(1.08) contrast(1.02); }
+  100% { transform: scale(1.012); filter: saturate(1.04) contrast(1.01); }
+}
+
+@keyframes pendingTitle {
+  0% { transform: translateY(-8px) scale(1); }
+  48% { transform: translateY(-13px) scale(1.018); }
+  100% { transform: translateY(-9px) scale(1); }
+}
+
+@keyframes pressFlash {
+  0% { opacity: 0; }
+  18% { opacity: 0.42; }
+  100% { opacity: 0; }
+}
 
 @keyframes selectedSettle {
   0% { transform: scale(1.06); }
@@ -259,7 +296,7 @@ a:focus-visible {
     width: auto;
     height: 1px;
     transform: translateY(-0.5px);
-    transition: top 1150ms cubic-bezier(.16, 1, .3, 1);
+    transition: top 820ms cubic-bezier(.16, 1, .3, 1);
     will-change: top;
   }
 }

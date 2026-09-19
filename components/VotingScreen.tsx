@@ -19,7 +19,7 @@ type VoteResponse = {
 
 const MIN_VISIBLE_SHARE = 20;
 const MAX_VISIBLE_SHARE = 80;
-const SPLIT_ANIMATION_MS = 1150;
+const SPLIT_ANIMATION_MS = 820;
 
 export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
   const [choice, setChoice] = useState<Choice | null>(initialChoice);
@@ -32,6 +32,7 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
   const [pending, setPending] = useState<Choice | null>(null);
   const [animating, setAnimating] = useState(false);
   const [resultRevision, setResultRevision] = useState(0);
+  const [interactionRevision, setInteractionRevision] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const animationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -41,6 +42,7 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
   async function vote(nextChoice: Choice) {
     if (pending || animating || choice === nextChoice) return;
     setPending(nextChoice);
+    setInteractionRevision((revision: number) => revision + 1);
     setError(null);
 
     try {
@@ -63,7 +65,7 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
 
       setChoice(payload.choice);
       setResult(payload.result);
-      setResultRevision((revision) => revision + 1);
+      setResultRevision((revision: number) => revision + 1);
       setAnimating(true);
 
       // Let the result state paint first, then move the existing divider/panels.
@@ -126,6 +128,7 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
           percent={result?.percentA}
           votes={result?.votesA}
           resultRevision={resultRevision}
+          interactionRevision={interactionRevision}
           fallbackClass="option-fallback-a"
         />
 
@@ -141,6 +144,7 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
           percent={result?.percentB}
           votes={result?.votesB}
           resultRevision={resultRevision}
+          interactionRevision={interactionRevision}
           fallbackClass="option-fallback-b"
         />
 
@@ -184,6 +188,7 @@ function PreferenceOption({
   percent,
   votes,
   resultRevision,
+  interactionRevision,
   fallbackClass,
 }: {
   label: string;
@@ -197,6 +202,7 @@ function PreferenceOption({
   percent?: number;
   votes?: number;
   resultRevision: number;
+  interactionRevision: number;
   fallbackClass: string;
 }) {
   const sideClass = side === "A" ? "option-panel-a" : "option-panel-b";
@@ -209,7 +215,7 @@ function PreferenceOption({
       aria-label={selected ? `${label}, your current choice` : `Vote for ${label}`}
       className={`option-panel ${sideClass} group absolute inset-0 overflow-hidden text-white ${
         disabled ? "cursor-default" : "cursor-pointer"
-      } ${selected && revealed ? "is-selected" : ""}`}
+      } ${selected && revealed ? "is-selected" : ""} ${pending ? "is-pending" : ""}`}
     >
       <div
         className={`option-image absolute inset-0 ${fallbackClass}`}
@@ -218,6 +224,13 @@ function PreferenceOption({
       />
       <div className="option-overlay absolute inset-0" aria-hidden="true" />
       <div className="option-vignette absolute inset-0" aria-hidden="true" />
+      {pending && (
+        <div
+          key={`press-flash-${interactionRevision}`}
+          className="option-press-flash absolute inset-0"
+          aria-hidden="true"
+        />
+      )}
       {selected && revealed && resultRevision > 0 && (
         <div
           key={`flash-${resultRevision}`}
