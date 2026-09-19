@@ -18,7 +18,7 @@ The product intentionally stays small:
 - The visual split is capped at 20/80 so the losing option remains readable, while displayed percentages remain exact.
 - Desktop reveals left/right; mobile reveals top/bottom.
 - Results remain hidden until the browser has voted on the active topic.
-- One browser vote per weekly topic is enforced with an HTTP-only anonymous UUID cookie plus a database unique constraint.
+- One browser has one vote row per weekly topic, identified by an HTTP-only anonymous UUID cookie. The browser may switch its choice during the active week; the latest choice wins.
 
 ## Stack
 
@@ -35,7 +35,8 @@ Create a Supabase project, then run these SQL files in order:
 1. `supabase/migrations/001_initial_schema.sql`
 2. `supabase/migrations/002_add_topic_images.sql`
 3. `supabase/migrations/003_topic_images_storage.sql
-4. `004_public_rpc_api.sql`` — recommended; creates the public `topic-images` bucket
+4. `004_public_rpc_api.sql`
+5. `005_allow_revote.sql`` — recommended; creates the public `topic-images` bucket
 
 For local/demo content only, optionally run:
 

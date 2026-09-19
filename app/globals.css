@@ -68,7 +68,7 @@ a:focus-visible {
   border: 0;
   padding: 0;
   background: transparent;
-  transition: clip-path 900ms cubic-bezier(.22, 1, .36, 1);
+  transition: clip-path 1150ms cubic-bezier(.16, 1, .3, 1);
   will-change: clip-path;
 }
 
@@ -86,10 +86,10 @@ a:focus-visible {
   top: 0;
   bottom: 0;
   transition:
-    left 900ms cubic-bezier(.22, 1, .36, 1),
-    width 900ms cubic-bezier(.22, 1, .36, 1),
-    top 900ms cubic-bezier(.22, 1, .36, 1),
-    height 900ms cubic-bezier(.22, 1, .36, 1);
+    left 1150ms cubic-bezier(.16, 1, .3, 1),
+    width 1150ms cubic-bezier(.16, 1, .3, 1),
+    top 1150ms cubic-bezier(.16, 1, .3, 1),
+    height 1150ms cubic-bezier(.16, 1, .3, 1);
   will-change: left, width, top, height;
 }
 
@@ -111,7 +111,7 @@ a:focus-visible {
   background: rgb(255 255 255 / 0.45);
   box-shadow: 0 0 28px rgb(0 0 0 / 0.2);
   transform: translateX(-0.5px);
-  transition: left 900ms cubic-bezier(.22, 1, .36, 1);
+  transition: left 1150ms cubic-bezier(.16, 1, .3, 1);
   will-change: left;
 }
 
@@ -174,6 +174,10 @@ a:focus-visible {
   animation: selectedSettle 900ms cubic-bezier(.22, 1, .36, 1) both;
 }
 
+.voting-stage.is-transitioning .split-divider {
+  animation: dividerTravelGlow 1150ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
 .option-choice-flash {
   background: white;
   mix-blend-mode: soft-light;
@@ -182,7 +186,7 @@ a:focus-visible {
 }
 
 .result-reveal {
-  animation: resultReveal 520ms 220ms cubic-bezier(.22, 1, .36, 1) both;
+  animation: resultReveal 620ms 280ms cubic-bezier(.22, 1, .36, 1) both;
 }
 
 .vote-dot {
@@ -203,6 +207,12 @@ a:focus-visible {
   0% { opacity: 0; }
   22% { opacity: 0.34; }
   100% { opacity: 0; }
+}
+
+@keyframes dividerTravelGlow {
+  0% { opacity: 0.65; box-shadow: 0 0 18px rgb(255 255 255 / 0.12); }
+  35% { opacity: 1; box-shadow: 0 0 48px rgb(255 255 255 / 0.42); }
+  100% { opacity: 0.8; box-shadow: 0 0 28px rgb(0 0 0 / 0.2); }
 }
 
 @keyframes resultReveal {
@@ -249,7 +259,7 @@ a:focus-visible {
     width: auto;
     height: 1px;
     transform: translateY(-0.5px);
-    transition: top 900ms cubic-bezier(.22, 1, .36, 1);
+    transition: top 1150ms cubic-bezier(.16, 1, .3, 1);
     will-change: top;
   }
 }

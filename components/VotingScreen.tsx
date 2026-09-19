@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import type { Choice, Topic, VoteResult } from "@/lib/types";
 import { formatWeekRange } from "@/lib/week";
@@ -19,18 +19,27 @@ type VoteResponse = {
 
 const MIN_VISIBLE_SHARE = 20;
 const MAX_VISIBLE_SHARE = 80;
+const SPLIT_ANIMATION_MS = 1150;
 
 export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
   const [choice, setChoice] = useState<Choice | null>(initialChoice);
   const [result, setResult] = useState<VoteResult | null>(initialResult);
+  const [displaySplit, setDisplaySplit] = useState(() =>
+    initialResult
+      ? clamp(initialResult.percentA, MIN_VISIBLE_SHARE, MAX_VISIBLE_SHARE)
+      : 50,
+  );
   const [pending, setPending] = useState<Choice | null>(null);
+  const [animating, setAnimating] = useState(false);
+  const [resultRevision, setResultRevision] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const animationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const revealed = Boolean(choice && result);
   const week = useMemo(() => formatWeekRange(topic.starts_at, topic.ends_at), [topic]);
 
   async function vote(nextChoice: Choice) {
-    if (choice || pending) return;
+    if (pending || animating || choice === nextChoice) return;
     setPending(nextChoice);
     setError(null);
 
@@ -46,8 +55,30 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
         throw new Error(payload.error ?? "Vote failed.");
       }
 
+      const nextSplit = clamp(
+        payload.result.percentA,
+        MIN_VISIBLE_SHARE,
+        MAX_VISIBLE_SHARE,
+      );
+
       setChoice(payload.choice);
       setResult(payload.result);
+      setResultRevision((revision) => revision + 1);
+      setAnimating(true);
+
+      // Let the result state paint first, then move the existing divider/panels.
+      // Two frames makes the 50:50 -> result transition reliable on first vote.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setDisplaySplit(nextSplit);
+        });
+      });
+
+      if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
+      animationTimerRef.current = setTimeout(() => {
+        setAnimating(false);
+        animationTimerRef.current = null;
+      }, SPLIT_ANIMATION_MS + 80);
     } catch (voteError) {
       setError(voteError instanceof Error ? voteError.message : "Vote failed.");
     } finally {
@@ -55,17 +86,13 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
     }
   }
 
-  const visualSplit = revealed
-    ? clamp(result?.percentA ?? 50, MIN_VISIBLE_SHARE, MAX_VISIBLE_SHARE)
-    : 50;
-
-  const splitStyle = { "--split": `${visualSplit}%` } as CSSProperties;
+  const splitStyle = { "--split": `${displaySplit}%` } as CSSProperties;
 
   return (
     <main
       className={`voting-stage relative min-h-dvh overflow-hidden bg-[#151515] text-white ${
         revealed ? "has-result" : ""
-      }`}
+      } ${animating ? "is-transitioning" : ""}`}
       style={splitStyle}
     >
       <div className="safe-top-nav pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between px-5 pb-5 md:px-7 md:pb-7">
@@ -92,12 +119,13 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
           imageUrl={topic.option_a_image_url}
           side="A"
           onVote={() => vote("a")}
-          disabled={Boolean(choice || pending)}
+          disabled={Boolean(pending || animating || choice === "a")}
           selected={choice === "a"}
           pending={pending === "a"}
           revealed={revealed}
           percent={result?.percentA}
           votes={result?.votesA}
+          resultRevision={resultRevision}
           fallbackClass="option-fallback-a"
         />
 
@@ -106,12 +134,13 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
           imageUrl={topic.option_b_image_url}
           side="B"
           onVote={() => vote("b")}
-          disabled={Boolean(choice || pending)}
+          disabled={Boolean(pending || animating || choice === "b")}
           selected={choice === "b"}
           pending={pending === "b"}
           revealed={revealed}
           percent={result?.percentB}
           votes={result?.votesB}
+          resultRevision={resultRevision}
           fallbackClass="option-fallback-b"
         />
 
@@ -122,6 +151,14 @@ export function VotingScreen({ topic, initialChoice, initialResult }: Props) {
         <div className="safe-bottom-hint pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-5 pt-5 md:px-7 md:pt-7">
           <span className="text-shadow text-[10px] font-semibold tracking-[0.18em] text-white/90 uppercase">
             Choose one
+          </span>
+        </div>
+      )}
+
+      {revealed && !pending && !animating && (
+        <div className="safe-bottom-hint pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-5 pt-5 md:px-7 md:pt-7">
+          <span className="text-shadow text-[9px] font-semibold tracking-[0.16em] text-white/60 uppercase">
+            Choose the other side to change your vote
           </span>
         </div>
       )}
@@ -146,6 +183,7 @@ function PreferenceOption({
   revealed,
   percent,
   votes,
+  resultRevision,
   fallbackClass,
 }: {
   label: string;
@@ -158,6 +196,7 @@ function PreferenceOption({
   revealed: boolean;
   percent?: number;
   votes?: number;
+  resultRevision: number;
   fallbackClass: string;
 }) {
   const sideClass = side === "A" ? "option-panel-a" : "option-panel-b";
@@ -167,7 +206,7 @@ function PreferenceOption({
       type="button"
       onClick={onVote}
       disabled={disabled}
-      aria-label={`Vote for ${label}`}
+      aria-label={selected ? `${label}, your current choice` : `Vote for ${label}`}
       className={`option-panel ${sideClass} group absolute inset-0 overflow-hidden text-white ${
         disabled ? "cursor-default" : "cursor-pointer"
       } ${selected && revealed ? "is-selected" : ""}`}
@@ -179,12 +218,18 @@ function PreferenceOption({
       />
       <div className="option-overlay absolute inset-0" aria-hidden="true" />
       <div className="option-vignette absolute inset-0" aria-hidden="true" />
-      {selected && revealed && <div className="option-choice-flash absolute inset-0" aria-hidden="true" />}
+      {selected && revealed && resultRevision > 0 && (
+        <div
+          key={`flash-${resultRevision}`}
+          className="option-choice-flash absolute inset-0"
+          aria-hidden="true"
+        />
+      )}
 
       <div className={`option-content option-content-${side.toLowerCase()} absolute z-10 flex items-center justify-center`}>
         <div className="flex w-full max-w-3xl flex-col items-center px-6 py-16 text-center md:px-10">
           <div className="text-shadow mb-5 text-[10px] font-bold tracking-[0.22em] text-white/65 uppercase">
-            {revealed ? (selected ? "Your choice" : side) : side}
+            {revealed ? (selected ? "Your choice" : "Switch vote") : side}
           </div>
 
           <h1 className="option-title text-shadow max-w-[15ch] text-balance text-[clamp(2.8rem,7vw,7.8rem)] leading-[0.88] font-semibold tracking-[-0.06em]">
@@ -194,11 +239,11 @@ function PreferenceOption({
           <div className="mt-8 min-h-20">
             {pending && (
               <span className="text-shadow inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em] uppercase">
-                <span className="vote-dot" /> Voting
+                <span className="vote-dot" /> Updating
               </span>
             )}
-            {revealed && (
-              <div className="result-reveal">
+            {revealed && !pending && (
+              <div key={`result-${resultRevision}`} className="result-reveal">
                 <div className="text-shadow text-[clamp(2.2rem,4vw,4.8rem)] leading-none font-semibold tracking-[-0.055em]">
                   {percent}%
                 </div>
